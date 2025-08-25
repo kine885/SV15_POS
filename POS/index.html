@@ -185,6 +185,10 @@
     if (changed_amount != NaN) {
       label_change_amount.classList.add("bg-yellow-500");
     }
+    if (received.trim() < total){
+      label_change_amount.innerText = "";
+        label_change_amount.classList.remove("bg-yellow-500");
+    }
   }
   function cancelProduct(){
      swal({
