@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products List</title>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="sweetalert.js"></script>
+    <script src="tailwind.js"></script>
+</head>
+</head>
+<body class="bg-gray-100 flex p-4">
+    <form class="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+        <div class="mb-5">
+            <label for="input_name" class="block mb-2 text-sm font-medium text-gray-900">Name: </label>
+            <input type="text" id="input_name" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" ">
+        </div>
+        <div class="mb-5">
+            <label for="input_category" class="block mb-2 text-sm font-medium text-gray-900">Category:</label>
+                <select name="cars" id="input_category" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="drink">Drink</option>
+                    <option value="food">Food</option>
+                    <option value="water">Water</option>
+                </select>
+        </div>
+        <div class="mb-5">
+            <label for="input_price" class="block mb-2 text-sm font-medium text-gray-900">Price: </label>
+            <input id="input_price" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" ">
+        </div>
+        <div class="mb-5">
+            <label for="profile_ur_url" class="block mb-2 text-sm font-medium text-gray-900">Image URL: </label>
+            <input id="profile_ur_url" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"    ">
+        </div>
+        <div class="flex justify-between mb-5">
+            <input type="reset" class="text-white bg-red-700 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5" value="cancel"></input>
+            <input type="button" id="btn_add" class="text-white bg-blue-700 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5" value="Save"></input>
+        </div>
+    </form>
+    <form class="w-full max-w-3xl bg-white border border-gray-200 rounded-lg p-6">
+    <h1 class="text-3xl text-center mb-4">Product List</h1>
+    <div class="grid grid-cols-7 gap-4 text-sm text-white border  bg-gray-800 border-gray-700 px-4 py-2">
+        <div>#</div>
+        <div>Name</div>
+        <div>Category</div>
+        <div>Price</div>
+        <div>Image</div>
+        <div class="col-span-2 text-center">Action</div>
+    </div>
+    <div>
+        <ul id="main_list"></ul>
+    </div>
+    </form>
+</body>
+<script>
+    let btn_add = document.getElementById('btn_add')
+    let main_list = document.getElementById('main_list')
+    let input_name = document.getElementById('input_name')
+    let input_category = document.getElementById('input_category')
+    let input_price = document.getElementById('input_price')
+    let profile_ur_url = document.getElementById('profile_ur_url')
+    let product_array = getProductList()
+    let global_index = null
+    renderLi()
+    btn_add.addEventListener('click', function(){
+    let name = input_name.value
+    let category = input_category.value
+    let price = input_price.value
+    let profile = profile_ur_url.value
+    if(name.trim() == ''){
+           swal("Must Enter Name!", {
+      icon: "warning",
+    });
+        return
+    }
+     if(price.trim() == ''){
+           swal("Must Enter Price!", {
+      icon: "warning",
+    });
+        return
+    }
+    if(profile.trim() == ''){
+           swal("Must Enter URL!", {
+      icon: "warning",
+    });
+        return
+    }
+    if (global_index == null){
+        product_array.push({name,category,price,profile})
+        localStorage.setItem('product_array', JSON.stringify(product_array))
+    }else{
+        //update
+        product_array[global_index] = {name,category,price,profile}
+        localStorage.setItem('product_array', JSON.stringify(product_array))
+        //pel update hx oy global_index yg = null vinh
+        global_index = null
+        btn_add.value = "Save"
+    } 
+    //renderli jenh mk
+    renderLi()
+    //clear input
+    input_name.value = ''
+    input_name.focus()
+    input_price.value = ''
+    profile_ur_url.value = '' 
+})
+function editValue(index){
+    let current_product = product_array[index]
+    global_index = index
+    input_name.value = current_product.name
+    input_category.value = current_product.category
+    input_price.value = current_product.price
+    profile_ur_url.value = current_product.profile
+    btn_add.value = 'Edit'
+}
+function deleteValue(index){
+    swal({
+  title: "Do you want to delete?",
+  text: "Once deleted, you will not be able to recover your data!",
+  icon: "warning",
+  buttons: true,
+  dangerMode: true,
+})
+.then((willDelete) => {
+  if (willDelete) {
+    swal("Poof! Your imaginary file has been deleted!", {
+      icon: "success",
+    });
+    product_array.splice(index, 1), 
+    localStorage.setItem('product_array', JSON.stringify(product_array))
+    renderLi()
+  } else {
+    swal("Your imaginary file is safe!");
+  }
+});
+}
+function renderLi(){
+    //oy main_list yg = nth pel render first
+    main_list.innerHTML = ''
+    let product_obj = getProductList()
+    let index = 0
+    product_array.forEach(function(item, index){
+        let new_li = document.createElement('li')
+        new_li.innerHTML =`
+            <div class="grid grid-cols-7 gap-4 text-sm px-4 py-2 items-center">
+                <div>${index + 1}.</div>
+                    <div>${item.name}</div>
+                    <div>${item.category}</div>
+                     <div>${item.price}$</div>
+                      <img src="${item.profile}" alt="" class="w-12 h-12 rounded-full"/>
+                    <div class="col-span-2 flex gap-4 justify-center">
+                        <button class="text-white bg-green-700 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5" onclick="editValue(${index})" type="button" value="Edit">Edit</button>
+                        <button class="text-white bg-red-700 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5" onclick="deleteValue(${index})" type="button" value="Delete">Delete</button>
+                    </div>
+            </div>
+             `
+            main_list.appendChild(new_li) //add new li jol ot oy vea tv override ah jas te
+            index ++
+    })
+}
+function getProductList(){
+    let product_storage = localStorage.getItem('product_array') ?? '[]'
+    // if (!product_storage ===null){
+    //    return [] 
+    // }
+    return JSON.parse(product_storage) //convert oy vea tv jea array vinh
+    renderLi()
+}
+</script>
+</html>
